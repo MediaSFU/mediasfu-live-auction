@@ -1,0 +1,21 @@
+{
+  "name": "mediasfu-live-auction",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A production-shaped live auction starter built across MediaSFU SDK platforms.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MediaSFU/mediasfu-live-auction.git"
+  },
+  "homepage": "https://mediasfu.com",
+  "keywords": ["mediasfu", "webrtc", "live-auction", "video-commerce", "multi-sdk"],
+  "workspaces": ["server", "apps/react"],
+  "scripts": {
+    "test": "npm --workspace server test && npm --workspace apps/react test",
+    "build": "npm --workspace apps/react run build",
+    "check:public": "node scripts/check-public-safety.mjs",
+    "check:media-consent": "node scripts/check-user-initiated-media.mjs"
+  },
+  "engines": { "node": ">=22" }
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "roles": ["host", "bidder", "viewer"],
+  "phases": ["open", "countdown", "complete"],
+  "lotStates": ["queued", "open", "sold", "passed"],
+  "quickBidIncrementsCents": [2500, 10000, 50000],
+  "mediaPriority": ["screenShare", "remoteCamera", "localCamera", "identity"],
+  "visual": {
+    "background": "#070d1c",
+    "surface": "#101827",
+    "gold": "#ffd60a",
+    "teal": "#35bcb1",
+    "text": "#f8fbff",
+    "muted": "#9eafc5",
+    "cameraFit": "cover",
+    "screenFit": "contain",
+    "screenMirrored": false,
+    "localCameraMirrored": true
+  },
+  "invariants": [
+    "Every participant always has a card.",
+    "Screen share is primary and is never mirrored or cropped.",
+    "All prepared remote audio renderers are mounted.",
+    "A prepared card is not proof that video is flowing.",
+    "Bid submissions are idempotent.",
+    "Invitation grants are opaque, expiring, and single-use."
+  ]
+}

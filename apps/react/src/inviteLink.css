@@ -1,0 +1,13 @@
+.invite-link-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.invite-panel li a {
+  border: 1px solid #35bcb1;
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  color: #fff;
+  background: #35bcb11a;
+  text-decoration: none;
+}

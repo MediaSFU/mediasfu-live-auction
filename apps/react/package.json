@@ -1,0 +1,18 @@
+{
+  "name": "mediasfu-live-auction-react",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 4176",
+    "build": "vite build",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.2",
+    "mediasfu-reactjs": "4.3.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "vite": "^7.1.3"
+  }
+}

@@ -1,0 +1,53 @@
+.authority span.unavailable {
+  color: #ff9fad;
+}
+
+.authority span.unavailable i {
+  background: #ef5b70;
+  box-shadow: 0 0 0 0.25rem #ef5b7029;
+}
+
+.recovery-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  padding: 1rem;
+  border: 1px solid #ef5b7066;
+  border-radius: 1rem;
+  background: linear-gradient(140deg, #351321, #111827);
+  box-shadow: 0 16px 40px #02060c66;
+}
+
+.recovery-panel div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.recovery-panel strong {
+  color: #ffdfe4;
+}
+
+.recovery-panel span {
+  color: #c6aeb6;
+  font-size: 0.82rem;
+}
+
+.recovery-panel button {
+  min-height: 2.7rem;
+  white-space: nowrap;
+  border: 1px solid #ffd60a;
+  border-radius: 0.7rem;
+  padding: 0.6rem 0.9rem;
+  color: #07101b;
+  background: #ffd60a;
+  font-weight: 900;
+}
+
+@media (max-width: 560px) {
+  .recovery-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
