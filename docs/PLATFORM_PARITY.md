@@ -6,21 +6,25 @@ audio renderers, and moderation capabilities.
 
 ## Implemented source
 
-| Capability | React | Angular | Vue | React Native | Expo | Flutter | Kotlin | Unity |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Host create; bidder/viewer join | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Opaque, single-use role invites | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Bid, increment, reserve, settle, end | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Main/secondary media resolution | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Camera, microphone, screen-share controls | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Remote audio renderer integration | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Requires Unity scene audio binding |
-| Chat | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Host moderation where exposed by SDK | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Responsive auction presentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Scene UI included; test it in the Editor/player |
+| Capability | React | Angular | Vue | React Native | Expo | Flutter | Kotlin | Swift/iOS | Unity |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Host create; bidder/viewer join | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Opaque, single-use role invites | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Bid, increment, reserve, settle, end | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Main/secondary media resolution | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Camera, microphone, screen-share controls | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Remote audio renderer integration | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Requires device validation | Requires Unity scene audio binding |
+| Chat | Yes | Yes | Yes | Yes | Yes | Yes | Yes | UI boundary included | Yes |
+| Host moderation where exposed by SDK | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Room controls exposed | Yes |
+| Responsive auction presentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | SwiftUI presentation included | Scene UI included; test it in the Editor/player |
 
 “Yes” means the repository includes the behavior for that platform. It does not
 mean that native media has been observed on a device. See
 [VALIDATION.md](VALIDATION.md) for completed build and runtime tests.
+
+The Swift/iOS port is in `apps/ios`. It uses the published MediaSFUAppleSDK
+room host and the same backend auction contract. Validate camera, microphone,
+screen capture, and native media on a physical device before distribution.
 
 ## Shared behavior
 
