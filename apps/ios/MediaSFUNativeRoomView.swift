@@ -15,6 +15,9 @@ struct MediaSFURoomConfiguration {
     var localLink = ""
     var userName: String
     var roomName: String
+    /// Optional room-scoped handoff returned by the auction backend.
+    var roomApiToken = ""
+    var roomLink = ""
     var action = "join"
     var eventType = "conference"
     var connectMediaSFU = true
@@ -34,6 +37,7 @@ struct MediaSFURoomConfiguration {
         config.apiUserName = configuration.apiUserName; config.apiKey = configuration.apiKey
         config.cloudRoomsEndpoint = configuration.cloudRoomsEndpoint; config.localLink = configuration.localLink
         config.userName = configuration.userName; config.roomName = configuration.roomName
+        config.roomApiToken = configuration.roomApiToken; config.roomLink = configuration.roomLink
         config.action = configuration.action; config.eventType = configuration.eventType
         config.connectMediaSFU = configuration.connectMediaSFU; config.autoProceed = true
         bridge = host
