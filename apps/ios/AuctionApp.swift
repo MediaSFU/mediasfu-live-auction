@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @main struct MediaSFULiveAuctionApp: App {
   var body: some Scene { WindowGroup { AuctionRootView() } }
@@ -27,7 +28,7 @@ import SwiftUI
           value = try await api.create(hostName: name)
         } else {
           value = try await api.redeem(grant: grant, displayName: name)
-          role = value["role"] as? String ?? "viewer"
+          role = value["role"] as? String == "bidder" ? "bidder" : "viewer"
           meetingId = value["meetingId"] as? String ?? ""
         }
         let auctionValue = value["auction"] as? [String: Any] ?? [:]
@@ -217,6 +218,10 @@ struct AuctionRoomView: View {
   private var mediaSFURoomName: String { model.roomData["roomName"] as? String ?? model.meetingId }
   private var roomApiToken: String { model.roomData["secret"] as? String ?? "" }
   private var roomLink: String { model.roomData["link"] as? String ?? "" }
+  private var adminPasscode: String {
+    model.roomData["secureCode"] as? String ?? (model.isHost ? roomApiToken : "")
+  }
+  private var canPublishMedia: Bool { model.isHost || model.role == "bidder" }
   var body: some View {
     ZStack {
       auctionNavy.ignoresSafeArea()
@@ -224,7 +229,9 @@ struct AuctionRoomView: View {
         controller: room,
         configuration: MediaSFURoomConfiguration(
           userName: model.name, roomName: mediaSFURoomName, roomApiToken: roomApiToken,
-          roomLink: roomLink, eventType: "conference")
+          roomLink: roomLink, islevel: model.isHost ? "2" : (model.role == "bidder" ? "1" : "0"),
+          adminPasscode: adminPasscode, action: model.isHost ? "create" : "join",
+          eventType: "conference", canPublishMedia: canPublishMedia)
       ).ignoresSafeArea().allowsHitTesting(false).accessibilityHidden(true)
       auctionNavy.ignoresSafeArea()
       ScrollView {
@@ -240,12 +247,17 @@ struct AuctionRoomView: View {
             Text(room.state).font(.caption)
             if model.isHost { Button("End", role: .destructive) { model.end() } }
           }.padding(14).background(auctionPanel).clipShape(RoundedRectangle(cornerRadius: 14))
+          MediaSFUHeadlessVideoStage(
+            controller: room, accent: auctionGold, emptyTitle: "Waiting for the auction camera",
+            prefersLocalPrimary: model.isHost
+          ).frame(height: 270).clipShape(RoundedRectangle(cornerRadius: 18))
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(auctionGold.opacity(0.28)))
           VStack(alignment: .leading, spacing: 12) {
             HStack {
               VStack(alignment: .leading, spacing: 5) {
                 Text("AUCTIONEER").foregroundStyle(auctionGold).font(.caption2.weight(.black))
                 Text(model.name).font(.title2.weight(.black))
-                Text("Camera and mic off").foregroundStyle(.secondary).font(.caption)
+                Text("Live room media controls").foregroundStyle(.secondary).font(.caption)
               }
               Spacer()
               Text(String(model.name.prefix(1)).uppercased()).font(
@@ -253,23 +265,23 @@ struct AuctionRoomView: View {
               ).foregroundStyle(auctionNavy).frame(width: 76, height: 76).background(auctionGold)
                 .clipShape(Circle())
             }
-            if model.role != "viewer" {
+            if canPublishMedia {
               HStack(spacing: 10) {
                 Button {
                   room.toggleAudio()
                 } label: {
                   Label("Mic", systemImage: "mic.fill")
-                }
+                }.accessibilityLabel("Toggle microphone")
                 Button {
                   room.toggleVideo()
                 } label: {
                   Label("Camera", systemImage: "video.fill")
-                }
+                }.accessibilityLabel("Toggle camera")
                 Button {
                   room.toggleScreenShare()
                 } label: {
                   Label("Share", systemImage: "arrow.up.rectangle.fill")
-                }
+                }.accessibilityLabel("Share screen")
               }.buttonStyle(.bordered)
             }
           }.padding(18).background(
@@ -277,77 +289,113 @@ struct AuctionRoomView: View {
               colors: [auctionPanel, Color(red: 0.04, green: 0.08, blue: 0.14)],
               startPoint: .topLeading, endPoint: .bottomTrailing)
           ).clipShape(RoundedRectangle(cornerRadius: 18))
-          if let lot = model.auction?.openLot {
-            VStack(alignment: .leading, spacing: 8) {
-              Text(lot.art).font(.system(size: 64)).frame(maxWidth: .infinity)
-              Text("LOT \(lot.position + 1) · NOW BIDDING").foregroundStyle(auctionGold).font(
-                .caption.weight(.black))
-              Text(lot.title).font(.title2.weight(.black))
-              Text(lot.displayPrice).foregroundStyle(auctionGold).font(
-                .system(size: 34, weight: .black))
-              Text(lot.bidder.isEmpty ? "Reserve" : "\(lot.bidder) leads · \(lot.bids) bids")
-                .foregroundStyle(.secondary)
-              if model.role == "bidder" {
-                HStack {
-                  ForEach([2500, 10000, 50000], id: \.self) { increment in
-                    Button("Bid \(max(lot.reserve, lot.highest + increment) / 100)") {
-                      model.bid(increment)
-                    }.buttonStyle(.borderedProminent).tint(auctionGold).foregroundStyle(.black)
-                  }
-                }
-              }
-              if model.isHost {
-                Button("🔨 Close lot and advance") { model.settle() }.buttonStyle(.borderedProminent)
-                  .tint(auctionTeal)
-              }
-              if model.role == "viewer" {
-                Text("View-only invitation · bidding and publishing are disabled.").foregroundStyle(
-                  .secondary)
-              }
-            }.padding(18).background(auctionPanel).clipShape(RoundedRectangle(cornerRadius: 18))
-          }
-          AuctionPanel(model: model, chat: $chat)
-          if model.isHost {
-            VStack(alignment: .leading, spacing: 8) {
-              Text("PRIVATE SINGLE-USE INVITES").foregroundStyle(auctionGold).font(
-                .caption.weight(.black))
-              Text("Bidder links can bid and publish. Viewer links join read-only.")
-                .foregroundStyle(.secondary)
-              HStack {
-                Button("Bidder link") { model.makeInvite(role: "bidder") }
-                Button("Viewer link") { model.makeInvite(role: "viewer") }
-              }.buttonStyle(.bordered)
-              ForEach(Array(model.invites.enumerated()), id: \.offset) { _, invite in
-                ShareLink(item: invite.1) { Text("Share \(invite.0) link") }
-              }
-            }.padding(16).background(auctionPanel).clipShape(RoundedRectangle(cornerRadius: 16))
-          }
+          AuctionLotPanel(model: model)
+          AuctionPanel(model: model, room: room, chat: $chat)
+          AuctionInvitesPanel(model: model)
           if !model.notice.isEmpty { Text(model.notice).foregroundStyle(.red) }
         }.padding(14)
       }
     }.task {
       while !Task.isCancelled {
-        try? await Task.sleep(for: .seconds(1.5))
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
         model.poll()
       }
     }.onDisappear { if model.isHost && model.auction != nil { model.end() } }
   }
 }
+
+private struct AuctionLotPanel: View {
+  @ObservedObject var model: AuctionModel
+
+  @ViewBuilder var body: some View {
+    if let lot = model.auction?.openLot {
+      VStack(alignment: .leading, spacing: 8) {
+        Text(lot.art).font(.system(size: 64)).frame(maxWidth: .infinity)
+        Text("LOT \(lot.position + 1) · NOW BIDDING")
+          .foregroundStyle(auctionGold).font(.caption.weight(.black))
+        Text(lot.title).font(.title2.weight(.black))
+        Text(lot.displayPrice).foregroundStyle(auctionGold).font(.system(size: 34, weight: .black))
+        Text(lot.bidder.isEmpty ? "Reserve" : "\(lot.bidder) leads · \(lot.bids) bids")
+          .foregroundStyle(.secondary)
+        if model.role == "bidder" {
+          HStack {
+            ForEach([2500, 10000, 50000], id: \.self) { increment in
+              Button("Bid \(max(lot.reserve, lot.highest + increment) / 100)") {
+                model.bid(increment)
+              }
+              .buttonStyle(.borderedProminent).tint(auctionGold).foregroundStyle(.black)
+            }
+          }
+        }
+        if model.isHost {
+          Button("🔨 Close lot and advance") { model.settle() }
+            .buttonStyle(.borderedProminent).tint(auctionTeal)
+        }
+        if model.role == "viewer" {
+          Text("View-only invitation · bidding and publishing are disabled.")
+            .foregroundStyle(.secondary)
+        }
+      }
+      .padding(18).background(auctionPanel).clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+  }
+}
+
+private struct AuctionInvitesPanel: View {
+  @ObservedObject var model: AuctionModel
+
+  @ViewBuilder var body: some View {
+    if model.isHost {
+      VStack(alignment: .leading, spacing: 8) {
+        Text("PRIVATE SINGLE-USE INVITES")
+          .foregroundStyle(auctionGold).font(.caption.weight(.black))
+        Text("Bidder links can bid and publish. Viewer links join read-only.")
+          .foregroundStyle(.secondary)
+        HStack {
+          Button("Bidder link") { model.makeInvite(role: "bidder") }
+          Button("Viewer link") { model.makeInvite(role: "viewer") }
+        }
+        .buttonStyle(.bordered)
+        ForEach(Array(model.invites.enumerated()), id: \.offset) { _, invite in
+          HStack {
+            if #available(iOS 16.0, *) {
+              ShareLink(item: invite.1) { Text("Share \(invite.0) link") }
+            }
+            Button("Copy \(invite.0) link") { UIPasteboard.general.string = invite.1 }
+          }
+        }
+      }
+      .padding(16).background(auctionPanel).clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+  }
+}
+
 private struct AuctionPanel: View {
   @ObservedObject var model: AuctionModel
+  @ObservedObject var room: MediaSFURoomController
   @Binding var chat: String
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text("BIDDING FLOOR & SALESROOM CHAT").foregroundStyle(auctionGold).font(
         .caption.weight(.black))
-      Text(
-        "Every connected participant keeps an identity card. Use the Messages control in the MediaSFU room for live chat."
-      ).foregroundStyle(.secondary)
+      if model.isHost {
+        MediaSFUBidderVideoFloor(controller: room, accent: auctionGold)
+      } else {
+        HStack(spacing: 10) {
+          Image(systemName: "person.crop.rectangle").foregroundStyle(auctionGold)
+          Text(
+            model.role == "bidder"
+              ? "Your bidder seat is visible to the auctioneer." : "Viewer access is read-only."
+          )
+            .font(.caption).foregroundStyle(.secondary)
+        }
+      }
+      Divider().overlay(Color.white.opacity(0.12))
       HStack {
         TextField("Message the salesroom", text: $chat).textFieldStyle(.roundedBorder)
         Button("Open chat") {
           model.notice = "Open the Messages control in the MediaSFU room UI to send this message."
-        }.disabled(model.role == "viewer")
+        }.disabled(!(model.isHost || model.role == "bidder"))
       }
     }.padding(16).background(auctionPanel).clipShape(RoundedRectangle(cornerRadius: 16))
   }

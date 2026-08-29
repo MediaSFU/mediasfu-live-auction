@@ -1,26 +1,47 @@
-# iOS / SwiftUI
+# Live Auction for iOS
 
-This is the SwiftUI port of the live-auction starter. It follows the same
-entry, invitation, room, bidding, lot settlement, moderation/media controls,
-single-use invite, and cleanup flow as the Flutter and React Native apps.
+This folder contains the native SwiftUI version of Live Auction. It includes
+auction creation, single-use bidder and viewer invitations, live bidding, lot
+settlement, moderation controls, MediaSFU audio/video, and room cleanup.
 
-## Add it to an app
+## Requirements
 
-1. Create an iOS 16+ SwiftUI target in Xcode.
-2. Add the files in this folder to the target.
-3. Add `https://github.com/MediaSFU/mediasfu-apple-sdk.git` as a Swift package
-   dependency and link `MediaSFUAppleSDK` to the app target.
-4. Add `NSCameraUsageDescription` and `NSMicrophoneUsageDescription` to the
-   target's Info.plist.
-5. Run the auction backend and set `AUCTION_API_URL` to its public origin when
-   it is not available at the default development address.
+- Xcode with an iOS 16 or newer app target
+- The Live Auction backend from this repository
+- The [MediaSFU Apple SDK](https://github.com/MediaSFU/mediasfu-apple-sdk)
 
-Account API credentials belong only to the backend. The iOS wrapper uses
-non-secret, shape-valid placeholders to select the no-UI pre-join path. The
-backend creates or joins the room, and the SDK replaces those placeholders with
-the room-scoped `roomName`, `secret`, and `link` before connecting the socket.
-Bidder and viewer invitations remain opaque, single-use application grants.
+## Add the app to an Xcode project
 
-On a physical iPhone, configure an HTTPS backend URL that the device can reach;
-`127.0.0.1` refers to the phone itself. The frontend configuration contains a
-backend origin only—never an account key or room secret.
+1. Add the Swift files in this folder to your app target.
+2. In Xcode, choose **File → Add Package Dependencies**, enter the Apple SDK
+   repository URL above, and link `MediaSFUAppleSDK` to the app target.
+3. Add these keys to the app's Info.plist:
+
+   ```xml
+   <key>NSCameraUsageDescription</key>
+   <string>Use your camera during an auction.</string>
+   <key>NSMicrophoneUsageDescription</key>
+   <string>Use your microphone during an auction.</string>
+   <key>CADisableMinimumFrameDurationOnPhone</key>
+   <true/>
+   ```
+
+4. Start the auction backend. The simulator uses `http://127.0.0.1:8791` by
+   default. To use another backend, set the `AUCTION_API_URL` scheme environment
+   variable to its origin.
+5. Build and run. Create an auction as the host, create a bidder or viewer
+   invitation, and open that invitation on a second client.
+
+`AUCTION_API_URL` identifies the auction application backend, not a MediaSFU
+room endpoint. Standard MediaSFU cloud routing needs no endpoint override or
+`localLink` in this app. Keep MediaSFU account credentials on the backend; the
+app receives a room-scoped handoff after the auction is created or joined.
+
+For a physical iPhone, use an HTTPS backend URL reachable from the phone.
+`127.0.0.1` on the phone does not refer to the development Mac.
+
+## Invitations
+
+Bidder and viewer invitations are single-use application links. The assigned
+participant name and role are redeemed by the backend, then used to enter the
+matching MediaSFU room. Share invitations only with their intended recipient.
