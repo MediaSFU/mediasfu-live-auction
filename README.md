@@ -9,6 +9,15 @@ The auction starter demonstrates realtime bidding and media. It deliberately
 does **not** process payments, transfer inventory, calculate tax, or create legal
 settlement records.
 
+## See it running
+
+| Auctioneer console | Bidder view |
+| --- | --- |
+| ![Auctioneer console with the host camera, a live bidder seat, and the leading bid](docs/evidence/react/02-two-person-host.png) | ![Bidder view with the auctioneer's remote video and bid buttons](docs/evidence/react/03-bidder-remote-media.png) |
+
+Captured from the React app in a two-person room. The camera feed is a synthetic
+test pattern; see the [evidence notes](docs/evidence/react/README.md).
+
 ## What ships
 
 - `server`: SQLite/WAL auction state, opaque invitation grants, server-side
