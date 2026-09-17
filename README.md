@@ -27,7 +27,7 @@ test pattern; see the [evidence notes](docs/evidence/react/README.md).
   headless mode (`returnUI={false}`).
 - `apps/angular`, `apps/vue`: framework ports that consume the same backend and
   auction presentation contract.
-- `apps/react-native`, `apps/expo`, `apps/flutter`, `apps/kotlin-android`, and
+- `apps/react-native`, `apps/expo`, `apps/flutter`, `apps/kotlin-android`, `apps/ios`, and
   `apps/unity`: native implementations and integration boundaries. Each app
   README lists the build and live-media tests completed for that target. A
   successful build does not by itself demonstrate a two-participant media path.
